@@ -130,12 +130,12 @@ Antes de medir, la hipótesis fue:
 
 | Implementación |   100 |  1000 |                 5000 |
 | -------------- | ----: | ----: | --------: |
-| sequential     | 0.007 | 0.001 | N/D (estimado: 0.000105) |
+| sequential     | 0.007 | 0.001 | N/D (no reportado) |
 | parallelStream | 0.077 | 0.007 |     0.001 |
 | processAsync   | 0.134 | 0.029 |     0.006 |
 | forkJoin       | 0.013 | 0.007 |     0.002 |
 
-Nota: en la salida de consola, el valor de `sequential` para 5000 en throughput no quedó reportado de forma confiable (`? 10??`). Para mantener consistencia analítica se usa la estimación derivada de `avgt`: $1 / 9518.162 \approx 0.000105$ ops/ms.
+Nota: en la salida de consola, el valor de `sequential` para 5000 en throughput no quedó reportado (`? 10??`), por lo que se deja como N/D.
 
 ### Latencia Promedio (ms/op)
 
