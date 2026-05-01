@@ -5,6 +5,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -75,11 +80,50 @@ public class RecordProcessor {
         .collect(Collectors.toList());
   }
 
+  /**
+   * Parallel pipeline using parallelStream and the common ForkJoinPool.
+   */
+  public List<Record> processParallelStream(List<String> lines) {
+    return lines.parallelStream()
+        .map(this::parse)
+        .map(this::enrich)
+        .map(this::transform)
+        .filter(this::validate)
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Async pipeline optimized for the I/O-bound enrich stage.
+   */
+  public List<Record> processAsync(List<String> lines) throws Exception {
+    ExecutorService ioPool = Executors.newFixedThreadPool(
+        Runtime.getRuntime().availableProcessors() * 4);
+    try {
+      List<CompletableFuture<Record>> futures = lines.stream()
+          .map(line -> CompletableFuture
+              .supplyAsync(() -> parse(line), ioPool)
+              .thenApplyAsync(this::enrich, ioPool)
+              .thenApply(this::transform)
+              .thenApply(r -> validate(r) ? r : null))
+          .collect(Collectors.toList());
+
+      CompletableFuture<?>[] futureArray = futures.toArray(new CompletableFuture[0]);
+      return CompletableFuture.allOf(futureArray)
+          .thenApply(v -> futures.stream()
+              .map(CompletableFuture::join)
+              .filter(Objects::nonNull)
+              .collect(Collectors.toList()))
+          .get(30, TimeUnit.SECONDS);
+    } finally {
+      ioPool.shutdown();
+    }
+  }
+
   private String resolveRegion(String id) {
     return switch (id.charAt(0) % 3) {
       case 0 -> "us-east";
       case 1 -> "eu-west";
-      default -> "ap-south";
+      default -> "apsouth";
     };
   }
 }

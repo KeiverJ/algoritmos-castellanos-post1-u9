@@ -2,7 +2,9 @@ package co.edu.udes.algoritmos.u9.benchmark;
 
 import co.edu.udes.algoritmos.u9.model.Record;
 import co.edu.udes.algoritmos.u9.service.RecordProcessor;
+import co.edu.udes.algoritmos.u9.task.RecordProcessorTask;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -45,5 +47,25 @@ public class PipelineBenchmark {
   @Benchmark
   public List<Record> sequential() {
     return processor.processSequential(data);
+  }
+
+  @Benchmark
+  public List<Record> parallelStream() {
+    return processor.processParallelStream(data);
+  }
+
+  @Benchmark
+  public List<Record> processAsync() throws Exception {
+    return processor.processAsync(data);
+  }
+
+  @Benchmark
+  public List<Record> forkJoin() {
+    ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+    try {
+      return pool.invoke(new RecordProcessorTask(data, processor));
+    } finally {
+      pool.shutdown();
+    }
   }
 }

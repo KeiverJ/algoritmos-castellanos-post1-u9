@@ -3,8 +3,12 @@ package co.edu.udes.algoritmos.u9.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import co.edu.udes.algoritmos.u9.model.Record;
+import co.edu.udes.algoritmos.u9.task.RecordProcessorTask;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ForkJoinPool;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
 class RecordProcessorTest {
@@ -56,5 +60,44 @@ class RecordProcessorTest {
     List<Record> results = processor.processSequential(lines);
 
     assertThat(results).hasSize(2);
+  }
+
+  @Test
+  void allPipelinesReturnSameCount() throws Exception {
+    List<String> lines = IntStream.range(0, 200)
+        .mapToObj(i -> i + ",rawdata-" + i + ",src")
+        .collect(Collectors.toList());
+
+    int sequentialSize = processor.processSequential(lines).size();
+    int parallelSize = processor.processParallelStream(lines).size();
+    int asyncSize = processor.processAsync(lines).size();
+
+    ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+    try {
+      int forkJoinSize = pool.invoke(new RecordProcessorTask(lines, processor)).size();
+
+      assertThat(parallelSize).isEqualTo(sequentialSize);
+      assertThat(asyncSize).isEqualTo(sequentialSize);
+      assertThat(forkJoinSize).isEqualTo(sequentialSize);
+    } finally {
+      pool.shutdown();
+    }
+  }
+
+  @Test
+  void throughputRegressionTest() throws Exception {
+    RecordProcessor localProcessor = new RecordProcessor();
+    List<String> data = IntStream.range(0, 1000)
+        .mapToObj(i -> i + ",data-" + i + ",src")
+        .collect(Collectors.toList());
+
+    long start = System.currentTimeMillis();
+    List<Record> results = localProcessor.processAsync(data);
+    long elapsed = System.currentTimeMillis() - start;
+
+    assertThat(results).isNotEmpty();
+    assertThat(elapsed)
+        .as("Regression: processAsync must complete 1000 records in under 3000ms")
+        .isLessThan(3000L);
   }
 }
