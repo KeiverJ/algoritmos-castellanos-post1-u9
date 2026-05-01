@@ -49,7 +49,7 @@ Entrada (List<String>)
 ```text
 algoritmos-castellanos-post1-u9/
 |- capturas/
-|  |- benchamrk.png
+|  |- benchmarks.png
 |- src/
 |  |- main/
 |  |  |- java/
@@ -130,12 +130,12 @@ Antes de medir, la hipótesis fue:
 
 | Implementación |   100 |  1000 |                 5000 |
 | -------------- | ----: | ----: | --------: |
-| sequential     | 0.007 | 0.001 | N/D (no reportado) |
+| sequential     | 0.007 | 0.001 | N/D (fila corrupta en consola) |
 | parallelStream | 0.077 | 0.007 |     0.001 |
 | processAsync   | 0.134 | 0.029 |     0.006 |
 | forkJoin       | 0.013 | 0.007 |     0.002 |
 
-Nota: en la salida de consola, el valor de `sequential` para 5000 en throughput no quedó reportado (`? 10??`), por lo que se deja como N/D.
+Nota: la fila de `sequential` para 5000 en throughput quedó corrupta en la consola (`? 10??`), por eso se marca como N/D. El valor de latencia `avgt` para ese mismo caso sí está reportado correctamente: 9518.162 ms/op.
 
 ### Latencia Promedio (ms/op)
 
@@ -224,7 +224,7 @@ El proyecto incluye pruebas unitarias para:
 
 Resultado de ejecución de benchmarks JMH:
 
-![Salida de benchmarks JMH](capturas/benchamrk.png)
+![Salida de benchmarks JMH](capturas/benchmarks.png)
 
 ## Solución de Problemas Frecuentes
 
