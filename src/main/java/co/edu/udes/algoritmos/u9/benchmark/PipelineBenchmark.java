@@ -4,8 +4,10 @@ import co.edu.udes.algoritmos.u9.model.Record;
 import co.edu.udes.algoritmos.u9.service.RecordProcessor;
 import co.edu.udes.algoritmos.u9.task.RecordProcessorTask;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -55,7 +57,8 @@ public class PipelineBenchmark {
   }
 
   @Benchmark
-  public List<Record> processAsync() throws Exception {
+  public List<Record> processAsync()
+      throws ExecutionException, InterruptedException, TimeoutException {
     return processor.processAsync(data);
   }
 

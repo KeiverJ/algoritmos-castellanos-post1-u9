@@ -6,7 +6,9 @@ import co.edu.udes.algoritmos.u9.model.Record;
 import co.edu.udes.algoritmos.u9.task.RecordProcessorTask;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
@@ -16,11 +18,11 @@ class RecordProcessorTest {
 
   @Test
   void parseBuildsRecordWithSource() {
-    Record record = processor.parse("1,raw,src-a");
+    Record parsedRecord = processor.parse("1,raw,src-a");
 
-    assertThat(record.id()).isEqualTo("1");
-    assertThat(record.rawData()).isEqualTo("raw");
-    assertThat(record.metadata()).containsEntry("source", "src-a");
+    assertThat(parsedRecord.id()).isEqualTo("1");
+    assertThat(parsedRecord.rawData()).isEqualTo("raw");
+    assertThat(parsedRecord.metadata()).containsEntry("source", "src-a");
   }
 
   @Test
@@ -63,7 +65,8 @@ class RecordProcessorTest {
   }
 
   @Test
-  void allPipelinesReturnSameCount() throws Exception {
+  void allPipelinesReturnSameCount()
+      throws ExecutionException, InterruptedException, TimeoutException {
     List<String> lines = IntStream.range(0, 200)
         .mapToObj(i -> i + ",rawdata-" + i + ",src")
         .collect(Collectors.toList());
@@ -85,7 +88,8 @@ class RecordProcessorTest {
   }
 
   @Test
-  void throughputRegressionTest() throws Exception {
+  void throughputRegressionTest()
+      throws ExecutionException, InterruptedException, TimeoutException {
     RecordProcessor localProcessor = new RecordProcessor();
     List<String> data = IntStream.range(0, 1000)
         .mapToObj(i -> i + ",data-" + i + ",src")

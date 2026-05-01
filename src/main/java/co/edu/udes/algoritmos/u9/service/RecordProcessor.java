@@ -7,9 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -95,7 +97,8 @@ public class RecordProcessor {
   /**
    * Async pipeline optimized for the I/O-bound enrich stage.
    */
-  public List<Record> processAsync(List<String> lines) throws Exception {
+  public List<Record> processAsync(List<String> lines)
+      throws ExecutionException, InterruptedException, TimeoutException {
     ExecutorService ioPool = Executors.newFixedThreadPool(
         Runtime.getRuntime().availableProcessors() * 4);
     try {
