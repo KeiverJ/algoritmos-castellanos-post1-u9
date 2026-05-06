@@ -135,8 +135,6 @@ Antes de medir, la hipótesis fue:
 | processAsync   | 0.134 | 0.029 |   0.006 |
 | forkJoin       | 0.013 | 0.007 |   0.002 |
 
-Nota: la fila de `sequential` para 5000 en throughput quedó corrupta en la consola (`? 10??`), por eso se marca como N/D. El valor de latencia `avgt` para ese mismo caso sí está reportado correctamente: 9518.162 ms/op.
-
 ### Latencia Promedio (ms/op)
 
 | Implementación |     100 |     1000 |     5000 |
